@@ -3,6 +3,7 @@
 
 # Editors
 .vscode
+*.code-workspace
 
 # Distribution & Packaging
 *.egg-info/
