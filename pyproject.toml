@@ -1,5 +1,5 @@
 [project]
-name = "box_model"
+name = "boxmodel"
 version = "0.0.1"
 authors = [
   { name="Conor Olive", email="colive@ucmerced.edu" },
@@ -18,4 +18,11 @@ dependencies = [
 ]
 
 [build-system]
-requires = ["setuptools ~= 58.0", "cython ~= 0.29.0"]
+requires = [
+  "setuptools",
+  "wheel",
+  "pip",
+]
+
+[tool.setuptools.packages.find]
+where = ["boxmodel"]

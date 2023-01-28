@@ -1,9 +1,51 @@
 \documentclass{report}
+
+% math
 \usepackage{amsmath}
+
+% hyperlinks
+\usepackage{hyperref}
+
+% bibliography
+\usepackage[
+	style=authoryear,
+	backend=biber,
+]{biblatex}
+\addbibresource{bibliography.bib}
+
+\title{Research Project Documentation}
+\author{Conor Olive}
+\date{2023}
+
 \begin{document}
+	\tableofcontents
+	
+	\section{Two-Dimensional Box Model with Source}
 	Begin with the assumption that the volume continuity is not constant, that is 
-	\begin{equation}
+	\begin{equation}\label{eq:source-term}
 		x_N(t)h_N(t) = V = qt^{\alpha}\text{,}
 	\end{equation}
-	where \(q > 0\) and \(\alpha \geq 0\) are constants. Let the source be at \(x = 0\).
+	where \(q\) is a constant and \(\alpha\) is a constant greater than zero. Next, consider the ordinary differential equation (see \cite[60]{Ungarish2009}), 
+	\begin{equation}\label{eq:box-model}
+		\frac{dx_N(t)}{dt} = \text{Fr}\left[h_N(t)\right]^{1/2}\text{.}
+	\end{equation}
+	Here, we also treat the Froude number as a constant. The height function \(h_N(t)\) can be substituted for \(qt^{\alpha} / x_N(t)\), from \eqref{eq:source-term} as in
+	\begin{equation*}
+		\frac{dx_N(t)}{dt} = \text{Fr}\left[\frac{qt^{\alpha}}{x_N(t)}\right]^{1/2}\text{.}
+	\end{equation*}
+	This can then be solved for \(x\) as a seperable differential equation,
+	\begin{equation*}
+		\frac{1}{\text{Fr}}\int_{x_0}^{\bar{x}} \left[x_N(t)\right]^{1/2} dx_N = q^{1/2} \int_{t_0}^{\bar{t}} t^{\alpha/2} dt\text{,}
+	\end{equation*}
+	which when integrated yields
+	\begin{equation*}
+		\frac{2}{3}\text{Fr}^{-1}\left[x_N(t) - x_0\right]^{3/2} = q^{1/2}\frac{t^{\frac{\alpha}{2} +1}}{\frac{\alpha}{2} + 1}\text{.}
+	\end{equation*}
+	Finally, solving for \(x_N(t)\) yields
+	\begin{equation*}
+		x_N(t) = \left[\text{Fr}\cdot\frac{3q^{1/2}t^{3\alpha/2 }}{2\alpha + 4} + x_0^{3/2}\right]^{2/3}\text{.}
+	\end{equation*}
+
+	\printbibliography
+
 \end{document}
