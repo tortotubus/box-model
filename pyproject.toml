@@ -7,22 +7,20 @@ authors = [
 description = "A small example package"
 readme = "README.md"
 
-[project.urls]
-"Homepage" = "https://github.com/tortotubus/boxmodel"
-"Bug Tracker" = "https://github.com/tortotubus/boxmodel/issues"
-
 dependencies = [
     "matplotlib",
     "numpy",
     "scipy"
 ]
 
+[project.urls]
+"Homepage" = "https://github.com/tortotubus/boxmodel"
+"Bug Tracker" = "https://github.com/tortotubus/boxmodel/issues"
+
 [build-system]
 requires = [
   "setuptools",
+  "pybind11",
   "wheel",
   "pip",
 ]
-
-[tool.setuptools.packages.find]
-where = ["boxmodel"]

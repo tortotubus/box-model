@@ -1,0 +1,182 @@
+\documentclass{report}
+
+% bibliography
+\usepackage[
+style=authoryear,
+backend=biber,
+]{biblatex}
+\addbibresource{bibliography.bib}
+
+\title{Research Project Documentation}
+\author{Conor Olive}
+\date{2023}
+
+% page setup
+\usepackage[
+top=1.2in,
+bottom=1.2in,
+left=1.65in,
+right=1.65in,
+]{geometry}
+
+% color
+\usepackage[usenames,dvipsnames,table]{xcolor}
+
+% AMS packages
+\usepackage{amsmath, amsfonts, amsthm, amssymb}
+
+\renewcommand{\implies}{\rightarrow}
+\renewcommand{\iff}{\leftrightarrow}
+\newcommand{\xor}{\oplus}
+
+% links
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks,
+	linkcolor={black},
+	citecolor={black},
+	urlcolor={blue!80!black}
+}
+\usepackage{float}
+\usepackage{import}
+\usepackage{xifthen}
+\usepackage{pdfpages}
+\usepackage{transparent}
+
+% Code snippets
+\usepackage{listings}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{1,1,1}
+
+%\lstdefinestyle{matlab}{
+%	language=MATLAB,
+%	backgroundcolor=\color{backcolour},   
+%	commentstyle=\color{codegreen},
+%	keywordstyle=\color{blue},
+%	numberstyle=\color{codegray},
+%	stringstyle=\color{codepurple},
+%	basicstyle=\ttfamily,
+%	breaklines=true,                 
+%	%numbers=left,                    
+%	tabsize=2,
+%	frame=single,
+%}
+%
+%\lstset{style=matlab}
+
+% fancy headers
+%\usepackage{fancyhdr}
+%\pagestyle{fancy}
+%
+%\fancyhead[LE,RO]{Conor Olive}
+%\fancyhead[RO,LE]{}
+%\fancyhead[RE,LO]{}
+%\fancyfoot[LE,RO]{\thepage}
+%\fancyfoot[C]{\leftmark}
+
+% inkscape figure inclusion 
+\newcommand{\incfig}[1]{%
+	\def\svgwidth{\columnwidth}
+	\import{./figures/}{#1.pdf_tex}
+}
+
+% theorem environments
+\makeatother
+\usepackage{thmtools}
+\usepackage[framemethod=TikZ]{mdframed}
+\mdfsetup{skipabove=1em,skipbelow=0em}
+
+\theoremstyle{definition}
+
+\declaretheoremstyle[
+headfont=\bfseries\sffamily\color{ForestGreen!70!black}, bodyfont=\normalfont,
+mdframed={
+	linewidth=2pt,
+	rightline=false, topline=false, bottomline=false,
+	linecolor=ForestGreen, backgroundcolor=ForestGreen!5,
+}
+]{thmgreenbox}
+
+\declaretheoremstyle[
+headfont=\bfseries\sffamily\color{NavyBlue!70!black}, bodyfont=\normalfont,
+mdframed={
+	linewidth=2pt,
+	rightline=false, topline=false, bottomline=false,
+	linecolor=NavyBlue, backgroundcolor=NavyBlue!5,
+}
+]{thmbluebox}
+
+
+\declaretheoremstyle[
+headfont=\bfseries\sffamily\color{NavyBlue!70!black}, bodyfont=\normalfont,
+mdframed={
+	linewidth=2pt,
+	rightline=false, topline=false, bottomline=false,
+	linecolor=NavyBlue
+}
+]{thmblueline}
+
+\declaretheoremstyle[
+headfont=\bfseries\sffamily\color{RawSienna!70!black}, bodyfont=\normalfont,
+mdframed={
+	linewidth=2pt,
+	rightline=false, topline=false, bottomline=false,
+	linecolor=RawSienna, backgroundcolor=RawSienna!5,
+}
+]{thmredbox}
+
+\declaretheoremstyle[
+headfont=\bfseries\sffamily\color{RawSienna!70!black}, bodyfont=\normalfont,
+numbered=no,
+mdframed={
+	linewidth=2pt,
+	rightline=false, topline=false, bottomline=false,
+	linecolor=RawSienna, backgroundcolor=RawSienna!1,
+},
+qed=\qedsymbol
+]{thmproofbox}
+
+\declaretheoremstyle[
+headfont=\bfseries\sffamily\color{NavyBlue!70!black}, bodyfont=\normalfont,
+numbered=no,
+mdframed={
+	linewidth=2pt,
+	rightline=false, topline=false, bottomline=false,
+	linecolor=NavyBlue, backgroundcolor=NavyBlue!1,
+},
+]{thmexplanationbox}
+
+
+\declaretheorem[style=thmbluebox, name=Algorithm]{algorithm}
+\declaretheorem[style=thmgreenbox, name=Definition]{definition}
+\declaretheorem[style=thmbluebox, numbered=no, name=Example]{eg}
+\declaretheorem[style=thmbluebox, numbered=no, name=Solution]{solution}
+\declaretheorem[style=thmredbox, name=Proposition]{prop}
+\declaretheorem[style=thmredbox, name=Theorem]{theorem}
+\declaretheorem[style=thmredbox, name=Lemma]{lemma}
+\declaretheorem[style=thmredbox, numbered=no, name=Corollary]{corollary}
+\declaretheorem[style=thmproofbox, name=Proof]{replacementproof}
+\renewenvironment{proof}[1][\proofname]{\vspace{-10pt}\begin{replacementproof}}{\end{replacementproof}}
+\declaretheorem[style=thmexplanationbox, name=Proof]{tmpexplanation}
+\newenvironment{explanation}[1][]{\vspace{-10pt}\begin{tmpexplanation}}{\end{tmpexplanation}}
+\declaretheorem[style=thmblueline, numbered=no, name=Remark]{remark}
+\declaretheorem[style=thmblueline, numbered=no, name=Note]{note}
+\newtheorem*{uovt}{UOVT}
+\newtheorem*{notation}{Notation}
+\newtheorem*{previouslyseen}{As previously seen}
+\newtheorem*{problem}{Problem}
+\newtheorem*{observe}{Observe}
+\newtheorem*{property}{Property}
+\newtheorem*{intuition}{Intuition}
+
+%\setlength{\arrayrulewidth}{0.5mm}
+%\setlength{\tabcolsep}{18pt}
+
+\renewcommand{\arraystretch}{1.2}
+{\rowcolors{3}{NavyBlue!2}{NavyBlue!2}
+	\setlength{\arrayrulewidth}{0.25mm}
+	\arrayrulecolor{NavyBlue!100}
+

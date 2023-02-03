@@ -11,3 +11,7 @@ build
 # Distribution & Packaging
 *.egg-info/
 *.pyc
+
+# Video output
+videos
+*.mp4
