@@ -1,6 +1,7 @@
 from .base import (AnalyticBoxModel, BoxModelSolution)
 
-from scipy.integrate import solve_ivp
+#from scipy.integrate import solve_ivp
+from boxmodel.numerics.integrate import solve_ivp
 import numpy as np
 
 class BoxModelWithSource(AnalyticBoxModel):
@@ -36,7 +37,7 @@ class BoxModelWithSource(AnalyticBoxModel):
             dxdt =  froude * np.sqrt((self.q*np.power(t,self.alpha))/x)
             return dxdt
 
-        sol = solve_ivp(lambda t, x: box_model(t, x), t_span=[self.time,time], y0=[self.front], t_eval=np.arange(self.time, time, dt))
+        sol = solve_ivp(box_model, t_span=[self.time,time], y0=self.front, max_step=dt, min_step=dt, atol=1e5)
         print(sol)
         self.numerical_solution = BoxModelSolution(frames=len(sol.y[0]), dt=dt)
 

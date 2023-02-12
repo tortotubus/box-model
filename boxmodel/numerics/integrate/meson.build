@@ -21,6 +21,7 @@ ivp = py3.extension_module('_ivp',
 
 py3.install_sources([
     '__init__.py',
+    'solve.py'
   ],
   subdir: 'boxmodel/numerics/integrate'
 )

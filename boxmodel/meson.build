@@ -24,7 +24,9 @@ inc_pybind11 = include_directories(incdir_pybind11)
 
 python_sources = [
     '__init__.py',
-    '__main__.py'
+    '__main__.py',
+    'test_numerics.py',
+    'run_box_model.py'
 ]
 
 py3.install_sources(

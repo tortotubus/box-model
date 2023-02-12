@@ -1,18 +1,17 @@
 #include "base.hpp"
 
-BoxModel::OdeSolver::OdeSolver(pybind11::function f, double a, double b, double y0, double atol, double hmax, double hmin)
+BoxModel::OdeSolver::OdeSolver(pybind11::function f, double t0, double tf, double y0, double atol, double hmax, double hmin)
 {
     this->fprime = f;
 
-    this->t_start = a;
-    this->t_old = a;
-    this->t = a;
-    this->t_end = b;
+    this->t_start = t0;
+    this->t_old = t0;
+    this->t = t0;
+    this->t_end = tf;
 
     this->y = y0;
 
     this->atol = atol;
-
     this->h_max = hmax;
     this->h = hmax;
     this->h_min = hmin;

@@ -2,11 +2,12 @@
 #define BASE_HPP
 
 #include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 
 namespace BoxModel {
     class OdeSolver {
         public:
-            OdeSolver(pybind11::function f, double a, double b, double y0, double atol, double hmax, double hmin);
+            OdeSolver(pybind11::function f, double t0, double tmax, double y0, double atol, double hmax, double hmin);
             void step();
             double get_y();
             double get_t();

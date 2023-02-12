@@ -45,7 +45,7 @@ class BoxModelViewer():
         max_x = -sys.maxsize
         max_y = -sys.maxsize
 
-        for frame in self.frames.frames:
+        for frame in self.numerical_solution.frames:
             tail_x = frame[3]
             tail_y = frame[4]
             head_x = frame[1]
@@ -66,7 +66,7 @@ class BoxModelViewer():
         ax.set_xlim(min_x, max_x)
         ax.set_ylim(min_y, max_y)
         
-        frame = self.frames.frames[0]
+        frame = self.numerical_solution.frames[0]
         time_label = ax.text(0.5,0.85,"")
 
         verts = [
@@ -94,7 +94,7 @@ class BoxModelViewer():
             return patch,
 
         def animate(i):
-            frame = self.frames.frames[i]
+            frame = self.numerical_solution.frames[i]
 
             verts = [
                 (frame[3],frame[4]),
@@ -117,7 +117,7 @@ class BoxModelViewer():
 
             return patch,time_label
 
-        anim = animation.FuncAnimation(fig, animate, init_func=init, frames=len(self.frames.frames), interval=self.frames.dt*1000, blit=True)
+        anim = animation.FuncAnimation(fig, animate, init_func=init, frames=len(self.numerical_solution.frames), interval=self.dt*1000, blit=True)
 
         return anim   
 

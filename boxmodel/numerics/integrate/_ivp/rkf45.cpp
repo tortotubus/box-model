@@ -3,32 +3,32 @@
 
 void BoxModel::RKF45::solver_step() 
 {        
-    boost::numeric::ublas::vector<double> k(this->s);
+    double k[6] = {0.};
 
     for (int i = 0; i < this->s; i++)
     {
-        double a = this->t + this->c(i) * this->h;
+        double a = this->t + this->c[i] * this->h;
         double b = this->y;
 
         if (i > 0) 
         {
             for (int j = 0; j < i; j++) 
             { 
-                b += this->a(i,j) * k(j); 
+                b += this->a[i][j] * k[j]; 
             }
         }
         
-        k(i) = this->h * f(a, b);
+        k[i] = this->h * f(a, b);
     }
 
     double error_estimate = 0;
-    for (int i = 0; i < this->s; i++) { error_estimate += this->b(0,i) * k(i); }
+    for (int i = 0; i < this->s; i++) { error_estimate += this->b[0][i] * k[i]; }
     error_estimate = (1.0/(this->h)) * std::abs(error_estimate);
 
     // Approximation accepted
     if (error_estimate <= this->atol) 
     { 
-        for (int i = 0; i < this->s; i++) { this->y += this->b(1,i) * k(i); }
+        for (int i = 0; i < this->s; i++) { this->y += this->b[1][i] * k[i]; }
         this->t += this->h;
     }
 
