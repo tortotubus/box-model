@@ -1,26 +1,29 @@
+[build-system]
+build-backend = 'mesonpy'
+requires = [
+  "meson-python",
+  "pybind11",
+  "wheel",
+  "numpy",
+]
+
 [project]
 name = "boxmodel"
+license = {file = "LICENSE.txt"}
+description = ""
 version = "0.0.1"
 authors = [
   { name="Conor Olive", email="colive@ucmerced.edu" },
 ]
-description = "A small example package"
-readme = "README.md"
-
+requires-python = ">=3.8"
 dependencies = [
     "matplotlib",
     "numpy",
     "scipy"
 ]
+readme = "README.md"
 
 [project.urls]
-"Homepage" = "https://github.com/tortotubus/boxmodel"
-"Bug Tracker" = "https://github.com/tortotubus/boxmodel/issues"
-
-[build-system]
-requires = [
-  "setuptools",
-  "pybind11",
-  "wheel",
-  "pip",
-]
+homepage = "https://github.com/tortotubus/boxmodel"
+source = "https://github.com/tortotubus/boxmodel"
+tracker = "https://github.com/tortotubus/boxmodel/issues"
