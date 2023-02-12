@@ -1,5 +1,5 @@
 ivp_src = [
-  '_ivp/numerics.cpp',
+  '_ivp/_ivp.cpp',
   '_ivp/base.cpp',
   '_ivp/base.hpp',
   '_ivp/rkf45.cpp',
@@ -7,21 +7,22 @@ ivp_src = [
 ]
 
 ivp = py3.extension_module('_ivp',
-  ivp_src 
+  ivp_src,
   include_directories: [
+    incdir_pybind11,
     incdir_numpy,
     '_ivp'
   ],
   dependencies: [py3_dep],
   override_options: ['cython_language=cpp'],
   install: true,
-  subdir: 'boxmodel/integrate'
+  subdir: 'boxmodel/numerics/integrate'
 )
 
 py3.install_sources([
     '__init__.py',
   ],
-  subdir: 'boxmodel/integrate'
+  subdir: 'boxmodel/numerics/integrate'
 )
 
-subdir('ivp')
+#subdir('_ivp')

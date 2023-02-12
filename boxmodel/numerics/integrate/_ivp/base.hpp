@@ -14,7 +14,7 @@ namespace BoxModel {
             bool has_failed();
 
         protected:
-            virtual void solver_step();
+            virtual void solver_step() {}
             pybind11::function fprime;
             double f(double t, double y);
             double t_start, t_old, t, t_end;

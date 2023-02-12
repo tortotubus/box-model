@@ -6,7 +6,7 @@ incdir_numpy = run_command(py3,
         'import os; os.chdir(".."); import numpy; print(numpy.get_include())'
     ],
     check: true
-)
+).stdout().strip()
 
 inc_np = include_directories(incdir_numpy)
 
@@ -18,12 +18,13 @@ incdir_pybind11 = run_command(py3,
         'import pybind11; print(pybind11.get_include())'
     ],
     check: true
-).stdout().strip
+).stdout().strip()
 
 inc_pybind11 = include_directories(incdir_pybind11)
 
 python_sources = [
-    '__init__.py'
+    '__init__.py',
+    '__main__.py'
 ]
 
 py3.install_sources(

@@ -1,9 +1,8 @@
-#ifndef RK_HPP
-#define RK_HPP
+#ifndef RKF45_HPP
+#define RKF45_HPP
+#include <pybind11/pybind11.h>
 
 #include "base.hpp"
-
-#include <pybind11/pybind11.h>
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
