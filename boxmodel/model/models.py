@@ -1,8 +1,45 @@
-from .base import (AnalyticBoxModel, BoxModelSolution)
+from .base import (BoxModel, AnalyticBoxModel, BoxModelSolution)
 
-#from scipy.integrate import solve_ivp
-from boxmodel.numerics.integrate import solve_ivp
+from scipy.integrate import solve_ivp
+#from boxmodel.numerics.integrate import solve_ivp
 import numpy as np
+
+class BoxModelWithConcentration(BoxModel):
+    """
+    """
+    def __init__(self, front: float, back: float, height: float, velocity: float, time: float, concentration: float, u: float):
+        super().__init__(front, back, height, velocity, time)
+        self.concentration = concentration
+        self.u = u
+
+    def solve(self, time: float, dt: float):
+
+        def box_model(t: float, z: float):
+            froude = np.sqrt(2)
+            volume = self.height*self.width
+
+            x, c = z
+
+            dx =  froude * np.sqrt((volume*c)/x)
+            dc = -(self.u * x * c) / volume
+
+            return [dx, dc]
+
+        sol = solve_ivp(box_model, t_span=[self.time,time], y0=[self.front, self.concentration], atol=1e5)
+        self.numerical_solution = BoxModelSolution(frames=len(sol.y[0]), dt=dt)
+
+        for i in range(len(sol.y[0])):
+            t = sol.t[i]
+            xN = sol.y[0][i]
+            #cN = sol.y[1][i]
+            hN = (self.height*self.width)/sol.y[0][i]
+            self.numerical_solution.frame(index=i, time=t, head=(xN,hN), tail=(0.,0.))
+
+    def numerical_solution(self):
+        return self.numerical_solution
+
+    def analytical_solution(self):
+        return self.analytical_solution
 
 class BoxModelWithSource(AnalyticBoxModel):
     """
@@ -38,7 +75,6 @@ class BoxModelWithSource(AnalyticBoxModel):
             return dxdt
 
         sol = solve_ivp(box_model, t_span=[self.time,time], y0=[self.front], max_step=dt, min_step=dt, atol=1e5)
-        print(sol)
         self.numerical_solution = BoxModelSolution(frames=len(sol.y[0]), dt=dt)
 
         for i in range(len(sol.y[0])):
