@@ -1,12 +1,13 @@
 #include <pybind11/pybind11.h>
 
+#include "base.hpp"
 #include "rkf45.hpp"
 
 PYBIND11_MODULE(_ivp, m) {
     m.doc() = "module doc";
 
     pybind11::class_<BoxModel::OdeSolver>(m, "OdeSolver")
-        .def(pybind11::init<pybind11::function, double, double, double, double, double, double>())
+        .def(pybind11::init<pybind11::function, double, double, pybind11::array_t<double>, double, double>())
         .def("step", &BoxModel::OdeSolver::step)
         .def("get_y", &BoxModel::OdeSolver::get_y)
         .def("get_t", &BoxModel::OdeSolver::get_t)
@@ -15,5 +16,7 @@ PYBIND11_MODULE(_ivp, m) {
 
     
     pybind11::class_<BoxModel::RKF45, BoxModel::OdeSolver>(m, "RKF45")
-       .def(pybind11::init<pybind11::function, double, double, double, double, double, double>());
+       .def(pybind11::init<pybind11::function, double, double, pybind11::array_t<double>, double, double, double, double>())
+       .def(pybind11::init<pybind11::function, double, double, double, double, double, double, double>());
+       
 }

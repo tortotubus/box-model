@@ -26,6 +26,7 @@ python_sources = [
     '__init__.py',
     '__main__.py',
     'test_numerics.py',
+    'test_numerics_vectorized.py',
     'run_box_model.py'
 ]
 

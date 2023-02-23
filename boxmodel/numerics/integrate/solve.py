@@ -129,7 +129,7 @@ class OdeResult(dict):
         return list(self.keys())
 
 
-def solve_ivp(fun, t_span, y0: float, method='RKF45', t_eval=None, atol=1e-6, max_step=1e10, min_step=0., args=None, **options):
+def solve_ivp(fun, t_span, y0, method='RKF45', t_eval=None, atol=1e-6, rtol=1e-3, max_step=1, first_step=0.05, min_step=0.001, args=None, **options):
 
     """
     """
@@ -139,13 +139,12 @@ def solve_ivp(fun, t_span, y0: float, method='RKF45', t_eval=None, atol=1e-6, ma
     
     t0, tf = map(float, t_span)
 
-    if args is not None:
-        pass
-
     if method in METHODS:
         method = METHODS[method]
 
-    solver = method(fun, t0, tf, y0, atol, max_step, min_step)
+
+
+    solver = method(fun, t0, tf, y0, atol, rtol, max_step, first_step, min_step)
 
     if t_eval is None:
         ts = [t0]

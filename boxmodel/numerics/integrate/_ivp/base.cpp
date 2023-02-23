@@ -1,25 +1,5 @@
 #include "base.hpp"
 
-BoxModel::OdeSolver::OdeSolver(pybind11::function f, double t0, double tf, double y0, double atol, double hmax, double hmin)
-{
-    this->fprime = f;
-
-    this->t_start = t0;
-    this->t_old = t0;
-    this->t = t0;
-    this->t_end = tf;
-
-    this->y = y0;
-
-    this->atol = atol;
-    this->h_max = hmax;
-    this->h = hmax;
-    this->h_min = hmin;
-
-    this->complete = 0;
-    this->failure = 0;
-}
-
 void BoxModel::OdeSolver::step() 
 {
     if (this->failure) { return; }
@@ -27,9 +7,13 @@ void BoxModel::OdeSolver::step()
     else { solver_step(); }
 }
 
-double BoxModel::OdeSolver::get_y() 
+pybind11::array_t<double> BoxModel::OdeSolver::get_y() 
 {
-    return this->y;
+    auto result = pybind11::array_t<double>(this->n);
+    pybind11::buffer_info result_buffer = result.request();
+    double* result_ptr = (double*)result_buffer.ptr;
+    for (int i = 0; i < this->n; i++) { result_ptr[i] = this->y[i]; }
+    return result;
 }
 
 double BoxModel::OdeSolver::get_t()
@@ -47,8 +31,22 @@ bool BoxModel::OdeSolver::has_failed()
     return this->failure;
 }
 
-double BoxModel::OdeSolver::f(double t, double y) 
+std::valarray<double> BoxModel::OdeSolver::fprime_wrapped(double t, std::valarray<double> args) 
 {
-    pybind11::object result = this->fprime(t, y);
-    return result.cast<double>();
+    auto args_nparr = pybind11::array_t<double>(this->n);
+    pybind11::buffer_info args_nparr_buffer = args_nparr.request();
+    double* args_nparr_ptr = (double*)args_nparr_buffer.ptr;
+
+    for (int i = 0; i < this->n; i++) { args_nparr_ptr[i] = args[i]; }
+
+    pybind11::object result = this->fprime(t, args_nparr);
+    pybind11::array_t<double> f_nparr = result.cast<pybind11::array_t<double>>();
+
+    pybind11::buffer_info f_nparr_buffer = f_nparr.request();
+    double* f_nparr_ptr = (double*)f_nparr_buffer.ptr;
+    std::valarray<double> f(this->n);
+
+    for (int i = 0; i < this->n; i++) { f[i] = f_nparr_ptr[i]; }
+
+    return f;
 }

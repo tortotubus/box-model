@@ -1,5 +1,6 @@
-from . import model
-from .numerics.integrate import _ivp 
+#from boxmodel import model
+from boxmodel.numerics.integrate import _ivp 
+from scipy.integrate import RK45
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -12,13 +13,46 @@ def yexact(t: float):
 
 def test_rfk45():
 
-    print(np.finfo(float).eps)
+    a = 0.
+    b = 2.
+    y0 = 0.5
+
+    atol = 1e-6
+    rtol = 1e-3
+
+    hmin = 1.1
+    hmax = hmin
+
+    solver = _ivp.RKF45(yprime, a, b, [y0, y0+1], atol, rtol, hmax, hmin)
+    steps = 10
+
+    for j in range(steps):
+        solver.step()
+        print(solver.get_y()[0])
+        print(yexact(solver.get_t()))
+        
+if __name__ == "__main__":
+    test_rfk45()
+
+
+
+
+
+
+
+
+
+
+
+
+def test_rfk45_order():
 
     a = 0.
     b = 2.
     y0 = 0.5
 
-    atol = 1e400
+    atol = 1e-6
+    rtol = 1e-3
 
     n = 9
 
@@ -28,7 +62,7 @@ def test_rfk45():
     for i in range(n):
         hmin = np.abs(a-b)/np.power(2,i+2)
         hmax = hmin
-        solver = _ivp.RKF45(yprime, a, b, y0, atol, hmax, hmin)
+        solver = _ivp.RKF45(yprime, a, b, [y0], atol, rtol, hmax, hmin)
         steps = int(np.abs(a - b) / hmin)
 
         for j in range(steps):
