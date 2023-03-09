@@ -25,15 +25,15 @@ class BoxModelWithConcentration(BoxModel):
 
             return [dx, dc]
 
-        sol = solve_ivp(box_model, t_span=[self.time,time], y0=[self.front, self.concentration], atol=1e5)
+        sol = solve_ivp(box_model, t_span=[self.time,time], y0=[self.front, self.concentration], t_eval=np.arange(1, time, dt))
         self.numerical_solution = BoxModelSolution(frames=len(sol.y[0]), dt=dt)
 
         for i in range(len(sol.y[0])):
             t = sol.t[i]
             xN = sol.y[0][i]
-            #cN = sol.y[1][i]
+            cN = sol.y[1][i]
             hN = (self.height*self.width)/sol.y[0][i]
-            self.numerical_solution.frame(index=i, time=t, head=(xN,hN), tail=(0.,0.))
+            self.numerical_solution.frame(index=i, time=t, head=(xN,hN), tail=(0.,0.), concentration=cN)
 
     def numerical_solution(self):
         return self.numerical_solution

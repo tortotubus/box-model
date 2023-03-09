@@ -24,17 +24,32 @@ class BoxModelViewer():
         self.dt = self.numerical_solution.dt
         self.fps = 1/self.numerical_solution.dt
     
-    def save(self, filename: str):
+    def show(self):
+        time = self.numerical_solution.frames[:,0]
+        height = self.numerical_solution.frames[:,2]
+        width = self.numerical_solution.frames[:,1]
+        concentration = self.numerical_solution.frames[:,5]
+        fig, ax = plt.subplots(2,1)
+        ax[0].plot(time, height, time, width)
+        ax[0].set_title('Box Model with Concentration')
+        ax[0].set_xlabel('Time')
+        ax[0].set_ylabel('Length')
+        ax[0].grid(True)
+        ax[1].plot(time, concentration)
+        ax[1].set_xlabel('Time')
+        ax[1].set_ylabel('Concentration')
+        ax[1].grid(True)
+        fig.tight_layout()
+        plt.show()
+
+    def save_animation(self, filename: str):
         anim = self.animation()
         writer = animation.FFMpegWriter(fps=self.fps,codec='h264')
         anim.save(filename, writer=writer)
 
-    def show(self):
-        anim = self.animation()
-        plt.show()
-
     def animation(self):
         fig, ax = plt.subplots()
+
         plt.title("Box Model")
         plt.ylabel("$h_N(t)$")
         plt.xlabel("$x_N(t)$")
@@ -67,7 +82,7 @@ class BoxModelViewer():
         ax.set_ylim(min_y, max_y)
         
         frame = self.numerical_solution.frames[0]
-        time_label = ax.text(0.5,0.85,"")
+        time_label = ax.text(max_x*.1,max_y*.9,"")
 
         verts = [
             # Tail
@@ -119,7 +134,7 @@ class BoxModelViewer():
 
         anim = animation.FuncAnimation(fig, animate, init_func=init, frames=len(self.numerical_solution.frames), interval=self.dt*1000, blit=True)
 
-        return anim   
+        plt.show()
 
 class AnalyticBoxModelViewer(BoxModelViewer):
     def __init__(self, boxmodel: AnalyticBoxModel):

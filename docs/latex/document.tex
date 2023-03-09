@@ -5,6 +5,29 @@
 	
 	\chapter{Gravity Currents}
 	
+	\section{Derivation of the Box Model}
+	
+	The ``box model'' is a simplified model of gravity currents, which can be derived from a one-layer model using the shallow-water equations. In the one-layer shallow-water model, the \textit{Boussinesq approximation} is employed, where it is assumed that the density different between the current, \(\rho_c\) and the ambient fluid, \(\rho_a\), is small, i.e. \(\rho_c/\rho_a \approx 1\). If we let
+	\begin{equation*}
+		\varepsilon = \frac{\rho_c - \rho_a}{\rho a}\,,
+	\end{equation*}
+	then we assume that \(|\varepsilon| \ll 1\). In addition, we choose \(\rho_a\) to be our reference density, and it follows that
+	\begin{equation*}
+		\rho_c = \rho_a(1 + \varepsilon)\,,
+	\end{equation*}
+	and our reduced gravity, which 
+	\begin{equation*}
+		content...
+	\end{equation*}
+	
+	\section{Two-Dimensional Box Model without Source}
+	
+	Begin with the assumption that the volume is held constant, and let \(x_N\) and \(h_N\) be functions of \(t\) which describe the height and width of the current. Then
+	\begin{equation*}
+		x_N(t)h_N(t) = V \,.
+	\end{equation*}
+
+	
 	\section{Two-Dimensional Box Model with Source}
 	Begin with the assumption that the volume continuity is not constant, that is 
 	\begin{equation}\label{eq:source-term}
@@ -18,7 +41,7 @@
 	\begin{equation*}
 		\frac{dx_N(t)}{dt} = \text{Fr}\left[\frac{qt^{\alpha}}{x_N(t)}\right]^{1/2}\text{.}
 	\end{equation*}
-	This can then be solved for \(x\) as a seperable differential equation,
+	This can then be solved for \(x\) as a separable differential equation,
 	\begin{equation*}
 		\frac{1}{\text{Fr}}\int_{x_0}^{\bar{x}} \left[x_N(t)\right]^{1/2} dx_N = q^{1/2} \int_{t_0}^{\bar{t}} t^{\alpha/2} dt\text{,}
 	\end{equation*}
@@ -31,42 +54,117 @@
 		x_N(t) = \left[\text{Fr}\cdot\frac{3q^{1/2}t^{3\alpha/2 }}{2\alpha + 4} + x_0^{3/2}\right]^{2/3}\text{.}
 	\end{equation*}
 
+	\section{Two-Dimensional Box Model with Concentration and No Source}
+	
+	We begin with the same assumption from the ordinary box model, where total volume is constant, i.e.
+	\begin{equation}
+		x_N(t)h_N(t) = V \,.
+	\end{equation}
+	In addition, we can start with the ordinary differential equation that defines the rate of change in width of the box for the box model with no source;
+	\begin{equation}
+		\frac{dx_N(t)}{dt} = \text{Fr}\left[h_N(t)\right]^{1/2}\,.
+	\end{equation}
+	In real-world scenarios, gravity currents are primarily driven by some difference in density between a less dense ambient fluid, and a higher-density fluid. In a simple sense,  this difference in density is positively correlated with the speed of the current. Because of this, we include in our dimensionless equation for current velocity a term \(c_b\), which describes the concentration of some sediment suspended in the current;
+	\begin{equation}
+		\frac{dx_N(t)}{dt} = \text{Fr}\left[h_N(t) c_b\right]^{1/2} \,.
+	\end{equation}
+	In addition, we wish to model the real-world behavior where this concentration is not constant. Like in the real world, our box-model current should allow for some decrease in concentration over time as sediment in the current slowly settles back onto the sea floor. It should incorporate some settling speed, which tells us how quickly the sediment falls in the vertical axis. Further, the rate at which sediment deposits from the model should also increase as the height decreases, since sediment will have less distance to travel before settling on the sea floor.
+	
+	\begin{figure}[H]
+		\centering
+		\incfig{boxmodelconcentrationnosource}
+		\caption{A graphical representation of the box-model with suspended particles.}
+	\end{figure}
+
+	With all these properties in mind, we create a differential equation for our concentration, which is
+	\begin{equation}
+		\frac{dc_b}{dt} = - \frac{u_s c_b }{h_N(t)}\,.
+	\end{equation}
+	Since the volume of our current is fixed (i.e. there is no source), we can substitute \(h_N(t) = V / x_N(t)\) and get
+	\begin{equation}
+		\frac{dc_b}{dt} = -\frac{u_s \, c_b \, x_N(t)}{V}\,.
+	\end{equation}
+	In summary, our system which describes this scenario is
+	\begin{align}
+		\frac{dx_N(t)}{dt} & = \text{Fr} \left[\frac{V }{x_N(t)}c_b\right]^{1/2}\\
+		\frac{dc_b(t)}{dt} & = -\frac{u_s \, c_b \, x_N(t)}{V}\,.
+	\end{align}
+	In addition, we would find it of use to keep track of the height of deposited sediment at a given point in space and time. Although this is not described in the system of ordinary differential equations, we can recover this from our solutions to the system.
+
 	\chapter{Numerical Methods}
 
-	\section{Runge-Kutta Methods}
-	\subsection{General Form of Runge-Kutta Methods}
+	For finding numerical solutions to systems of ordinary differential equations, we use a Prince-Dormand fourth-order Runge-Kutta method with fifth-order error prediction. This method utilizes a butcher tableau shown in \ref{table:prince-dormand-butcher}.
 	
-	From \cite[134]{Hairer2008}
-	
-	\begin{definition}[Explicit Runge-Kutta Method]
-		Let \(s\) be an integer (the "number of stages") and \(a_{21}, a_{31}, a_{32}, \dots, a_{s1}, a_{s2},\dots,a_{s,s-1}\), \(b_1, \dots, b_s\), \(c_2, \dots,c_s\), be real coefficients. Then the method
-		\begin{align}
-			\begin{split}
-			k_1 &= f(x_0, y_0)\\
-			k_2 &= f(x_0 + c_2h , y_0 + ha_{21}k_1)\\
-			k_3 &= f(x_0 + c_3h, y_0 + h(a_{31}k_1 + a_{32}k_2))\\
-			\: &\dots \\
-			k_s &= f(x_0 + c_s h, y_0 + h(a_{s1}k_1 + \dots + a_{s,s-1}k_{s-1}))\\
-			y_1 &= y_0 + h(b_1k_1 + \dots + b_sk_s)
-			\end{split}
-		\end{align}
-		is called an \textit{\(s\)-stage explicit Runge-Kutta method} (ERK).
-	\end{definition}
-	\vspace{1cm}
-	\noindent Most often these methods can be expressed as a Butcher tableau, e.g.
 	\begin{table}[H]
 		\centering
-		\begin{tabular}{c|ccccc}
-			  \(0\)    &            &            &            &               &         \\
-			 \(c_2\)   & \(a_{21}\) &            &            &               &         \\
-			 \(c_3\)   & \(a_{31}\) & \(a_{32}\) &            &               &         \\
-			\(\vdots\) & \(\vdots\) & \(\vdots\) & \(\vdots\) &               &         \\
-			 \(c_s\)   & \(a_{s1}\) & \(a_{s2}\) & \(\dots\)  & \(a_{s,s-1}\) &         \\ \hline
-			           &  \(b_1\)   &  \(b_2\)   & \(\dots\)  &  \(b_{s-1}\)  & \(b_s\)
+		\begin{tabular}{c|cccccc}
+			 \(0\)   &                &                 &                &              &                 &           \\
+			\(1/5\)  &    \(1/5\)     &                 &                &              &                 &           \\
+			\(3/10\) &    \(3/40\)    &    \(9/40\)     &                &              &                 &           \\
+			\(4/5\)  &   \(44/45\)    &   \(-56/15\)    &    \(32/9\)    &              &                 &           \\
+			\(8/9\)  & \(19372/6561\) & \(-25360/2187\) & \(64448/6561\) & \(-212/729\) &                 &           \\
+			 \(1\)   & \(9017/3167\)  &   \(-355/33\)   & \(46732/5274\) &  \(49/176\)  & \(-5103/18656\) &           \\ \hline
+			         &   \(35/384\)   &      \(0\)      &  \(500/1113\)  & \(125/192\)  & \(-2187/6784\)  & \(11/84\)
 		\end{tabular}
+		\caption{The butcher tableau used for our Runge-Kutta method. The fifth-order error coefficients used for the adaptive time step are omitted.}
+		\label{table:prince-dormand-butcher}
 	\end{table}
 	
-	\subsection{Automatic Step Size Control}
+	Although the method utilizes an adaptive step size, we can set the absolute and relative tolerances \lstinline{atol} and \lstinline{rtol} to \lstinline{np.inf}, and manually set \lstinline{max_step} and \lstinline{first_step} to our desired step size. By doing this, we create a fixed step size so that we can verify the fourth-order accuracy of the method.
+	
+	To measure the error we choose a simple and non-stiff ordinary differential equation, specifically
+	\begin{equation*}
+		\frac{dy}{dt} = y - t^2 + 1\,,
+	\end{equation*}
+	with the initial value \(y(0) = 0.5\). This ordinary differential equation has a known analytic solution which is
+	\begin{equation*}
+		y = (t + 1)^2 - 0.5e^t \,.
+	\end{equation*}
+	To measure the error, we simply take the absolute value of the difference between our numerical solution and analytic solution at the end of our interval. In our case, this is at \(t_f=2\). 
+	
+	Next, we perform a series of numerical solutions using successively smaller time steps and store the error at the end of the time interval together with the error. We make a copy of this data, computing the logarithm of both the time steps and the errors. With this, we perform linear interpolation using \lstinline{np.polyfit}, for which the first degree coefficient tells us the order of our method. This order, and a logarithmic plot of time step \(h\) versus absolute error \(|\epsilon|\) is shown in \ref{fig:dormand-prince-order}.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[scale=0.75]{./figures/DormandPrinceOrder.pdf}
+		\caption{A logarithmic-scale plot of step size \(h\) versus absolute error \(|\epsilon|\) for our Runge-Kutta method. The measured order of this method is approximately 4.8. }
+		\label{fig:dormand-prince-order}
+	\end{figure}
+	
+%	\section{Runge-Kutta Methods}
+%	\subsection{General Form of Runge-Kutta Methods}
+%	
+%	From \cite[134]{Hairer2008}
+%	
+%	\begin{definition}[Explicit Runge-Kutta Method]
+%		Let \(s\) be an integer (the "number of stages") and \(a_{21}, a_{31}, a_{32}, \dots, a_{s1}, a_{s2},\dots,a_{s,s-1}\), \(b_1, \dots, b_s\), \(c_2, \dots,c_s\), be real coefficients. Then the method
+%		\begin{align}
+%			\begin{split}
+%			k_1 &= f(x_0, y_0)\\
+%			k_2 &= f(x_0 + c_2h , y_0 + ha_{21}k_1)\\
+%			k_3 &= f(x_0 + c_3h, y_0 + h(a_{31}k_1 + a_{32}k_2))\\
+%			\: &\dots \\
+%			k_s &= f(x_0 + c_s h, y_0 + h(a_{s1}k_1 + \dots + a_{s,s-1}k_{s-1}))\\
+%			y_1 &= y_0 + h(b_1k_1 + \dots + b_sk_s)
+%			\end{split}
+%		\end{align}
+%		is called an \textit{\(s\)-stage explicit Runge-Kutta method} (ERK).
+%	\end{definition}
+%	\vspace{1cm}
+%	\noindent Most often these methods can be expressed as a Butcher tableau, e.g.
+%	\begin{table}[H]
+%		\centering
+%		\begin{tabular}{c|ccccc}
+%			  \(0\)    &            &            &            &               &         \\
+%			 \(c_2\)   & \(a_{21}\) &            &            &               &         \\
+%			 \(c_3\)   & \(a_{31}\) & \(a_{32}\) &            &               &         \\
+%			\(\vdots\) & \(\vdots\) & \(\vdots\) & \(\vdots\) &               &         \\
+%			 \(c_s\)   & \(a_{s1}\) & \(a_{s2}\) & \(\dots\)  & \(a_{s,s-1}\) &         \\ \hline
+%			           &  \(b_1\)   &  \(b_2\)   & \(\dots\)  &  \(b_{s-1}\)  & \(b_s\)
+%		\end{tabular}
+%	\end{table}
+%	
+%	\subsection{Automatic Step Size Control}
 	
 	
 	

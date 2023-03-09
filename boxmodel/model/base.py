@@ -77,15 +77,16 @@ class BoxModelSolution():
         The time series result of the solved model
     """
     def __init__(self, frames: int, dt: float):
-        self.frames = np.empty((frames, 5), dtype=float)
+        self.frames = np.empty((frames, 6), dtype=float)
         self.dt = dt
 
-    def frame(self, index: int, time: float, head: Tuple[float, float], tail: Tuple[float, float]):
+    def frame(self, index: int, time: float, head: Tuple[float, float], tail: Tuple[float, float], concentration: float):
         self.frames[index][0] = time
         self.frames[index][1] = head[0]
         self.frames[index][2] = head[1] 
         self.frames[index][3] = tail[0]
         self.frames[index][4] = tail[1]
+        self.frames[index][5] = concentration
 
     @property
     def frames(self):

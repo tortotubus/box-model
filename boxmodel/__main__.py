@@ -9,9 +9,10 @@ if __name__ == '__main__':
         height = 1.,
         velocity = 0.,
         time = 0.,
-        concentration=0.01,
-        u = 0.5)
+        concentration=1,
+        u = 0.05)
 
-    model.solve(time=30, dt=0.1)
+    model.solve(time=50, dt=0.1)
     viewer = BoxModelViewer(model)
-    viewer.show()    
+    viewer.animation()
+    #viewer.show()    
