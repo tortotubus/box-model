@@ -45,12 +45,22 @@ def test_rfk45():
     fit = np.polyfit(logarr[0,:], logarr[1,:], deg=1)
     print(fit)
     
-    ax.set_ylabel('$|\epsilon|$')
-    ax.set_xlabel('$h$')
+    ax.set_ylabel('$|h-h_{exact}|$')
+    ax.set_xlabel('$\Delta t$')
 
-    ax.set_title("Dormand-Prince Method Order: {}".format(fit[0]))
-    ax.plot(arr[0,:], arr[1,:])
+    #ax.set_title("Dormand-Prince Method Order: {}".format(fit[0]))
+    ax.plot(arr[0,:], arr[1,:], label='Actual Order: {:.4f}'.format(fit[0]))
+    ax.legend(loc='right')
     plt.show()
 
 if __name__ == "__main__":
+    plt.rcParams['lines.linewidth'] = 2
+    plt.rcParams['font.size'] = 18
+    plt.rcParams['axes.linewidth'] = 2
+    #plt.rcParams['axes.labelsize'] = 10
+    plt.rcParams['xtick.labelsize'] = 16
+    plt.rcParams['ytick.labelsize'] = 16
+    plt.rcParams['legend.fontsize'] = 10
+    plt.rcParams['savefig.format'] = 'pdf'
+    plt.rcParams["figure.figsize"] = (4.333,4)
     test_rfk45()
