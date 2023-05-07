@@ -1,6 +1,3 @@
-# Build
-build
-
 # Environments
 .venv
 
@@ -12,6 +9,5 @@ build
 *.egg-info/
 *.pyc
 
-# Video output
-videos
-*.mp4
+# mesonpy
+.mesonpy-native-file.ini
