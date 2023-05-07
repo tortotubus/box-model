@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from typing import Tuple
 
 import numpy as np
-import array
 
 class BoxModel(ABC):
     """
@@ -18,6 +17,8 @@ class BoxModel(ABC):
         Starting height of the wave
     velocity : float
         Starting velocity of the wave
+    froude : float
+        Constant Froude number to be used
     time : float
         Time at which the simulation is to be started
     """
@@ -52,6 +53,8 @@ class MultipleBoxModel(ABC):
     
     Parameters
     ----------
+    n_waves : int
+        Number of waves to be considered
     front : float
         Position of the wave fronts
     back : float
@@ -60,6 +63,8 @@ class MultipleBoxModel(ABC):
         Starting height of the wave
     velocity : float
         Starting velocity of the wave
+    froude : float
+        Constant Froude number to be used
     time : float
         Time at which the simulation is to be started
     """
@@ -93,34 +98,28 @@ class MultipleBoxModel(ABC):
     def solve(self):
         pass
 
-
-
-class AnalyticBoxModel(BoxModel):
-    """
-    Base class for all BoxModels
-    
-    Parameters
-    ----------
-    front : float
-        Position of the wave front
-    back : float
-        Position of the back of the wave volume
-    height : float
-        Starting height of the wave
-    velocity : float
-        Starting velocity of the wave
-    time : float
-        Time at which the simulation is to be started
-    """
-    def __init__(self, front: float, back: float, height: float, velocity: float, time: float):
-        super().__init__(front=front, back=back, height=height, velocity=velocity, time=time)
-    
-    @property
-    def analytical_solution():
-        pass
-
 class MultipleBoxModelSolution():
     """
+    Contains the time series of the solved model. This class is designed to be consumed by BoxModelViewer.
+
+    Parameters
+    ----------
+    frames : int
+        The n number of frames which will be contained
+    dt : float
+        The size of the time step between frames
+    n_waves : int
+        The number of waves to be considered
+
+    Attributes
+    ----------
+    frames : array_like, shape (n,6) 
+        The time series result of the solved model
+    n_waves : int
+        The number of waves to be considered
+    dt : float
+        This value is used for animations. It will be used to display frames at a rate of one nondimensional time to one second
+
     """
     def __init__(self, frames: int, dt: float, n_waves: int):
         self.frames = np.empty((frames, n_waves, 6), dtype = float)
@@ -149,19 +148,22 @@ class MultipleBoxModelSolution():
 
 class BoxModelSolution():
     """
-    Contains the time series of the solved model
+    Contains the time series of the solved model. This class is designed to be consumed by BoxModelViewer.
 
     Parameters
     ----------
     frames : int
-        The number of frames which will be contained
+        The n number of frames which will be contained
     dt : float
         The size of the time step between frames
 
     Attributes
     ----------
-    frames : 
+    frames : array_like, shape (n,6) 
         The time series result of the solved model
+    dt : float
+        This value is used for animations. It will be used to display frames at a rate of one nondimensional time to one second
+
     """
     def __init__(self, frames: int, dt: float):
         self.frames = np.empty((frames, 6), dtype=float)
@@ -197,6 +199,20 @@ class BoxModelSolution():
 
 class DepositSolution():
     """
+    This class contains the recovered solution h_b for the deposit on the floor. It may also be consumed by various BoxModelViewer.
+
+    Parameters
+    ----------
+    solution : BoxModelSolution
+        The solution of the box model from which we recover the deposit height
+    u : float
+        The nondimensional settling speed of the particulate consider
+    n : int
+        The number of discrete locations in which we wish to recover sediment height
+    start : float
+        The first location in which we wish to recover sediment height
+    end : float
+        The final location in which we wish to recover sediment height
     """
     def __init__(self, solution: BoxModelSolution, u: float, n: int, start: float, end: float):
         self.solution = solution
@@ -225,6 +241,20 @@ class DepositSolution():
     
 class MultipleDepositSolution():
     """
+    This class contains the recovered solution h_b for the deposit on the floor. It may be consumed by MultipleBoxModelViewer.
+
+    Parameters
+    ----------
+    solution : BoxModelSolution
+        The solution of the box model from which we recover the deposit height
+    u : float
+        The nondimensional settling speed of the particulate consider
+    n : int
+        The number of discrete locations in which we wish to recover sediment height
+    start : float
+        The first location in which we wish to recover sediment height
+    end : float
+        The final location in which we wish to recover sediment height
     """
     def __init__(self, solution: MultipleBoxModelSolution, u: float, n: int, start: float, end: float):
         self.solution = solution

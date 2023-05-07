@@ -1,6 +1,6 @@
 import sys
 
-from .base import (BoxModel, MultipleBoxModel, AnalyticBoxModel, DepositSolution)
+from .base import (BoxModel, MultipleBoxModel, DepositSolution)
 
 import numpy as np
 
@@ -21,7 +21,21 @@ class BoxModelViewer():
     Parameters
     ----------
     boxmodel : BoxModel
-        The box model to be displayed
+        The BoxModel object to display results from
+
+    Attributes
+    ----------
+    model : BoxModel
+        The BoxModel object to display results from
+    numerical_solution : BoxModelSolution
+        The BoxModelSolution object which contains the results to display
+    depsoit_solution : DepsoitSolution
+        The DepositSolution object which contains recovered deposit height from the BoxModelSolution object
+    dt : float
+        The nondimensional change in time from within the numerical solution
+    fps : float
+        The dimensional value of number of frames per second in which we display animations of the box model. 
+        One nondimensional time is equal to one second.
     """
     def __init__(self, boxmodel: BoxModel):
         self.model = boxmodel
@@ -241,41 +255,6 @@ class BoxModelViewer():
 
         ax.add_collection(collection)
 
-        plt.show()
-
-class AnalyticBoxModelViewer(BoxModelViewer):
-    def __init__(self, boxmodel: AnalyticBoxModel):
-        super().__init__(boxmodel)
-        self.analytical_solution = boxmodel.analytical_solution
-
-    def show_analytical_and_numerical(self):
-        fig, ax = plt.subplots(2,1)
-        ax[0].plot(self.analytical_solution.time, self.analytical_solution.width, label="Analytical", linestyle='dashed')
-        ax[0].plot(self.numerical_solution.time, self.numerical_solution.width, label="Numerical")
-        ax[0].set_xlabel("$t$")
-        ax[0].set_ylabel("$x_N(t)$")
-        ax[0].legend(loc='lower right')
-        ax[1].plot(self.analytical_solution.time, self.analytical_solution.height, label="Analytical", linestyle='dashed')
-        ax[1].plot(self.numerical_solution.time, self.numerical_solution.height, label="Numerical")
-        ax[1].set_xlabel("$t$")
-        ax[1].set_ylabel("$h_N(t)$")
-        ax[1].legend(loc='lower right')
-        plt.show()
-
-    def show_error(self):
-        fig, ax = plt.subplots()
-        ax.plot(self.numerical_solution.time, np.abs(self.numerical_solution.width - self.analytical_solution.width))
-        ax.set_xlabel("$t$")
-        ax.set_ylabel("$\epsilon$")
-        plt.show()
-
-    def show_error_loglog(self):
-        fig, ax = plt.subplots()
-        ax.plot(self.numerical_solution.time, np.abs(self.numerical_solution.width - self.analytical_solution.width))
-        ax.set_xlabel("$t$")
-        ax.set_ylabel("$\epsilon$")
-        ax.set_xscale('log')
-        ax.set_yscale('log')
         plt.show()
 
 class MultipleBoxModelViewer():

@@ -1,5 +1,3 @@
-
-
 incdir_numpy = run_command(py3,
     [
         '-c',
@@ -25,9 +23,6 @@ inc_pybind11 = include_directories(incdir_pybind11)
 python_sources = [
     '__init__.py',
     '__main__.py',
-    'test_numerics.py',
-    'test_numerics_vectorized.py',
-    'run_box_model.py'
 ]
 
 py3.install_sources(
@@ -41,4 +36,3 @@ compilers = {
 }
 
 subdir('model')
-subdir('numerics')

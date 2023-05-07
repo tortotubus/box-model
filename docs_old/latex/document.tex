@@ -90,6 +90,33 @@
 		\frac{dc_b(t)}{dt} & = -\frac{u_s \, c_b \, x_N(t)}{V}\,.
 	\end{align}
 	In addition, we would find it of use to keep track of the height of deposited sediment at a given point in space and time. Although this is not described in the system of ordinary differential equations, we can recover this from our solutions to the system.
+	
+	To start, we must create an indicator function for the wave, which we call \(\delta_b(x)\). For times where
+
+	\chapter{Toward A More Robust Box Model}
+	
+	Although so far we have described systems which describe a system where the object of focus is the height and width of a single wave, we may wish to describe a system in which the head and tail of the wave are coupled, but described in different equations. In addition, we may wish to describe more than one wave at a time, and even describe how such waves might interact. To start, we will describe a single gravity current with separate equations for the head and tail.
+	
+	\section{Separating the Head and Tail}
+
+	We start with our equation for a box model which describes the relationship between width, height and volume;
+	\begin{equation}
+		x(t)h(t) = V \,.
+	\end{equation}
+	To separate the front and back of the wave, we let
+	\begin{equation*}
+		x(t) = x_N(t) - x_T(t) \,.
+	\end{equation*}
+	Now our equation becomes
+	\begin{equation*}
+		\left[x_N(t) - x_T(t)\right]h(t) = V \,.
+	\end{equation*}
+	From this our system of ordinary differential equations, including the terms for concentration becomes
+	\begin{align*}
+		\frac{dx_N(t)}{dt} & = \text{Fr}\left[\frac{Vc_b}{x_N(t) - x_T(t)}\right]^{1/2}\\
+		\frac{dx_T(t)}{dt} & = -\text{Fr}\left[\frac{Vc_b}{x_N(t) - x_T(t)}\right]^{1/2}\\
+		\frac{dc_b(t)}{dt} & = -\frac{u_s \, c_b \, \left[x_N(t) - x_T(t)\right]}{V}\,.
+	\end{align*}
 
 	\chapter{Numerical Methods}
 
