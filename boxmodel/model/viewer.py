@@ -482,6 +482,9 @@ class MultipleBoxModelViewer():
         ax.set_xlim(min_x, max_x)
         ax.set_ylim(0, max_y)
         
+        #ax.set_ylim(0,5)
+        ax.set_xlim(-5,5)
+
         frame = self.numerical_solution.frames[0]
         time_label = ax.text((np.abs(max_x - min_x)*.1) + min_x, max_y*.9, "time={0:.{1}f}".format(frame[0,0],2))
         
