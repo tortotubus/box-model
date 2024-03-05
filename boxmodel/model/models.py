@@ -32,25 +32,127 @@ class MultipleBoxModelWithConcentration(MultipleBoxModel):
 
     def solve(self, time: float, dt: float):
 
+        has_collided = np.full(shape=(self.n_waves-1),fill_value=False)
+        qpc = 4 # Quantities per current
+        arg_begin_extra = self.n_waves*qpc
+        self.u += self.u
+        self.froude += self.froude
+
+        """
+        def box_model_collision(t: float, z: float):
+            left, center, right = z[0:3]
+            c1,c2,c3,c4 = z[3:7]
+            V1,V2,V3,V4 = z[7:11]
+            u_s = 0
+
+            left_ = 0.45682*V1 + 0.06707*V2 + -0.53149*V3 + -0.46849*V4 + -0.17260*c3 + -0.05621*c4
+            center_ = 0.51032*V1 + 0.00415*V2 + -0.54307*V4 + -0.05879*c1 + 0.11532*c2 + -0.06338*c3 + 0.02701*c4
+            right_ = 0.48520*V1 + 0.10959*V2 + 0.36019*V3 + -0.53834*V4 + -0.18608*c1 + 0.33033*c2 + -0.08190*c3 + 0.20897*c4
+
+            V1_ = -0.07008*V1 +  0.08357*V2 +  0.02249*V3 + -0.09118*V4 +  0.26945*V1*u_s +  1.83365*V2*u_s +  0.01149*V3*u_s + -0.49722*V4*u_s
+            V2_ =  0.07016*V1 + -0.07842*V2 + -0.02846*V3 +  0.09190*V4 + -0.23123*V1*u_s + -2.26293*V2*u_s +  0.43293*V3*u_s +  0.44054*V4*u_s
+            V3_ =  0.06196*V1 + -0.13175*V2 +  0.03626*V3 +  0.08926*V4 + -0.20196*V1*u_s + -1.55399*V2*u_s + -0.17158*V3*u_s +  0.40881*V4*u_s
+            V4_ = -0.06134*V1 +  0.13179*V2 + -0.03585*V3 + -0.09032*V4 +  0.15986*V1*u_s +  1.96789*V2*u_s + -0.26530*V3*u_s + -0.34043*V4*u_s
+
+            return np.array([left_,center_,right_,0,0,0,0,V1_,V2_,V3_,V4_])
+        """
+
         def box_model(t: float, z: float):
-            lhs = np.empty(self.n_waves * 3)
 
-            for i in range(self.n_waves):
-                x_n, x_t, c_b = z[0 + 3*i : 3 + 3*i]
-                V = self.height[i] * self.width[i]
-                u_s = self.u[i]
-                fr = self.froude[i]
+            lhs_base = np.zeros(self.n_waves*qpc)
+            lhs_extra = np.zeros((self.n_waves - 1)*2*qpc)
 
-                lhs[0 + 3*i] =   fr * (np.sqrt(np.abs(V * c_b) / np.abs(x_n - x_t))) # dx_N(t)
-                lhs[1 + 3*i] = - fr * (np.sqrt(np.abs(V * c_b) / np.abs(x_n - x_t))) # dx_T(t)
-                lhs[2 + 3*i] = - (u_s * c_b * np.abs(x_n - x_t)) / V                 # dc_b(t)
+            for i in range(self.n_waves-1):
+                if has_collided[i]:
+                    # Left Current
+                    u_s_1 = self.u[i]
+                    fr_1 = self.froude[i]
+                    x_n_1, x_t_1, c1, V1 = z[0+qpc*i:qpc+qpc*i]
 
-            return lhs
-        
+                    # Center Left Current
+                    x_n_2, x_t_2, c2, V2 = z[arg_begin_extra+qpc*(i*2):arg_begin_extra+qpc*(i*2)+4]
+
+                    # Center Right Current
+                    x_n_3, x_t_3, c3, V3 = z[arg_begin_extra+qpc*(i*2+1):arg_begin_extra+qpc*(i*2+1)+4]
+
+                    # Right Current
+                    u_s_4 = self.u[(i+1)]
+                    fr_4 = self.froude[(i+1)]
+                    x_n_4, x_t_4, c4, V4 = z[0+qpc*(i+1):qpc+qpc*(i+1)]
+
+
+                    # Calculate colliding system
+                    left_outer_  = -1.08790*V1 + 0.52031*V2 + -1.53037*V3 +  0.24832*V4 +  0.51994*c1 + -0.89129*c2 +  0.64735*c3 + -0.50969*c4
+                    left_        = 0.45682*V1 + 0.06707*V2 + -0.53149*V3 + -0.46849*V4 + -0.17260*c3 + -0.05621*c4
+                    center_      = 0.51032*V1 + 0.00415*V2 + -0.54307*V4 + -0.05879*c1 +  0.11532*c2 + -0.06338*c3 +  0.02701*c4
+                    right_       = 0.48520*V1 + 0.10959*V2 +  0.36019*V3 + -0.53834*V4 + -0.18608*c1 +  0.33033*c2 + -0.08190*c3 +  0.20897*c4
+                    right_outer_ = 0.29398*V1 + 0.23460*V2 +  0.77733*V3 +  0.63647*V4 +  0.07809*c1 + -0.11973*c2 +  0.21491*c3
+
+                    V1_ = -0.07008*V1 +  0.08357*V2 +  0.02249*V3 + -0.09118*V4 +  0.26945*V1*u_s_1 +  1.83365*V2*u_s_1 +  0.01149*V3*u_s_1 + -0.49722*V4*u_s_1
+                    V2_ =  0.07016*V1 + -0.07842*V2 + -0.02846*V3 +  0.09190*V4 + -0.23123*V1*u_s_1 + -2.26293*V2*u_s_1 +  0.43293*V3*u_s_1 +  0.44054*V4*u_s_1
+                    V3_ =  0.06196*V1 + -0.13175*V2 +  0.03626*V3 +  0.08926*V4 + -0.20196*V1*u_s_4 + -1.55399*V2*u_s_4 + -0.17158*V3*u_s_4 +  0.40881*V4*u_s_4
+                    V4_ = -0.06134*V1 +  0.13179*V2 + -0.03585*V3 + -0.09032*V4 +  0.15986*V1*u_s_4 +  1.96789*V2*u_s_4 + -0.26530*V3*u_s_4 + -0.34043*V4*u_s_4
+
+                    c1_ =  0.02317*c1 + -0.02383*c2 +  0.00000*c3 + 0.00000*c4 + -0.98547*(c1*u_s_1*np.abs(x_n_1-x_t_1))/V1 +  0.12777*(c2*u_s_1*np.abs(x_n_2-x_t_2))/V2 + 0.03985*(c3*u_s_4*np.abs(x_n_3-x_t_3))/V3 + -0.01183*(c4*u_s_4*np.abs(x_n_4-x_t_4))/V4 
+                    c2_ =  0.47762*c1 + -0.48307*c2 + -0.26500*c3 + 0.25673*c4 +  0.14509*(c1*u_s_1*np.abs(x_n_1-x_t_1))/V1 +  0.37209*(c2*u_s_1*np.abs(x_n_2-x_t_2))/V2 + 4.99356*(c3*u_s_4*np.abs(x_n_3-x_t_3))/V3 + -0.86917*(c4*u_s_4*np.abs(x_n_4-x_t_4))/V4 
+                    c3_ =  0.32447*c1 + -0.33807*c2 + -0.40245*c3 + 0.40252*c4 +  0.00000*(c1*u_s_1*np.abs(x_n_1-x_t_1))/V1 +  1.34207*(c2*u_s_1*np.abs(x_n_2-x_t_2))/V2 + 4.07762*(c3*u_s_4*np.abs(x_n_3-x_t_3))/V3 + -0.75077*(c4*u_s_4*np.abs(x_n_4-x_t_4))/V4 
+                    c4_ = -0.01246*c1 +  0.01200*c2 + -0.03116*c3 + 0.03093*c4 + -0.00075*(c1*u_s_1*np.abs(x_n_1-x_t_1))/V1 + -0.08640*(c2*u_s_1*np.abs(x_n_2-x_t_2))/V2 + 0.22259*(c3*u_s_4*np.abs(x_n_3-x_t_3))/V3 + -0.99420*(c4*u_s_4*np.abs(x_n_4-x_t_4))/V4 
+
+                    # Left Current                    
+                    lhs_base[0+qpc*i] = left_ # dx_N(t)                    
+                    lhs_base[1+qpc*i] = left_outer_ # dx_T(t)                    
+                    lhs_base[2+qpc*i] = c1_ # dc_b(t)                
+                    lhs_base[3+qpc*i] = V1_ # dV_b(t)
+
+                    # Center Left Current
+                    lhs_extra[0+qpc*(i*2)] = center_ # dx_N(t)                    
+                    lhs_extra[1+qpc*(i*2)] = left_ # dx_T(t)                    
+                    lhs_extra[2+qpc*(i*2)] = c2_ # dc_b(t)                
+                    lhs_extra[3+qpc*(i*2)] = V2_ # dV_b(t)
+
+                    # Center Right Current
+                    lhs_extra[0+qpc*(i*2+1)] = right_ # dx_N(t)                    
+                    lhs_extra[1+qpc*(i*2+1)] = center_ # dx_T(t)                    
+                    lhs_extra[2+qpc*(i*2+1)] = c3_ # dc_b(t)                
+                    lhs_extra[3+qpc*(i*2+1)] = V3_ # dV_b(t)
+
+                    # Right Current
+                    lhs_base[0+qpc*(i+1)] = right_outer_ # dx_N(t)
+                    lhs_base[1+qpc*(i+1)] = right_ # dx_T(t)
+                    lhs_base[2+qpc*(i+1)] = c4_ # dc_b(t)
+                    lhs_base[3+qpc*(i+1)] = V4_ # dV_b(t)
+
+                else:
+                    # Left Current
+                    u_s_l = self.u[i]
+                    fr_l = self.froude[i]
+                    x_n_l, x_t_l, c_b_l, V_l = z[0+qpc*i:qpc+qpc*i]
+
+                    lhs_base[0+qpc*i] =   fr_l * (np.sqrt(np.abs(V_l * c_b_l) / np.abs(x_n_l - x_t_l))) # dx_N(t)
+                    lhs_base[1+qpc*i] = - fr_l * (np.sqrt(np.abs(V_l * c_b_l) / np.abs(x_n_l - x_t_l))) # dx_T(t)
+                    lhs_base[2+qpc*i] = - (u_s_l * c_b_l * np.abs(x_n_l - x_t_l)) / V_l                 # dc_b(t)
+                    #lhs_base[3+qpc*i] = 0                                                               # dV_b(t)
+
+                    # Right Current
+                    u_s_r = self.u[(i+1)]
+                    fr_r = self.froude[(i+1)]
+                    x_n_r, x_t_r, c_b_r, V_r = z[0+qpc*(i+1):qpc+qpc*(i+1)]
+
+                    lhs_base[0+qpc*(i+1)] =   fr_r * (np.sqrt(np.abs(V_r * c_b_r) / np.abs(x_n_r - x_t_r))) # dx_N(t)                    
+                    lhs_base[1+qpc*(i+1)] = - fr_r * (np.sqrt(np.abs(V_r * c_b_r) / np.abs(x_n_r - x_t_r))) # dx_T(t)
+                    lhs_base[2+qpc*(i+1)] = - (u_s_r * c_b_r * np.abs(x_n_r - x_t_r)) / V_r                 # dc_b(t)
+                    #lhs_base[3+qpc*(i+1)] = 0                                                               # dV_b(t)
+
+
+            return np.concatenate((lhs_base,lhs_extra))
+            #return lhs_base
+
+
+        # Terminate condition if concentration reaches below a certain threshold
         def concentration_threshold(t: float, z: float):
             cb_above_threshold = 0
             for i in range(self.n_waves):
-                c_b = z[2 + 3*i]
+                c_b = z[2 + qpc*i]
                 if c_b >= CONCENTRATION_THRESHOLD:
                     cb_above_threshold = 1
 
@@ -58,172 +160,115 @@ class MultipleBoxModelWithConcentration(MultipleBoxModel):
 
         concentration_threshold.terminal = True 
 
-        def current_interaction(t: float, z: float):
-            for i in range(self.n_waves):
-                xn_i, xt_i = z[0 + 3*i : 2 + 3*i]
-                for j in range(self.n_waves):
-                    if i != j:
-                        xn_j, xt_j = z[0 + 3*j : 2 + 3*j]
-                        if (xt_i <= xt_j <= xn_i) or (xt_i <= xn_j <= xn_i):
-                            return 0
+        # If currents have collided, stop IVP solver 
+        def tracked_current_interaction(t: float, z: float):
+            for i in range(self.n_waves-1):
+                left_front, right_front = z[i*qpc], z[1+(i+1)*qpc]
+                if left_front > right_front:
+                    has_collided[i] = True
+                    return 0
             return 1
         
-        current_interaction.terminal = True
+        tracked_current_interaction.terminal = True
 
-        initial_conditions = np.empty(self.n_waves * 3)
+        # Set initial conditions vector
+        ics_base = np.empty(self.n_waves*qpc)
+        extra_box_fill = 0.01
+        ics_extra = np.full(shape=(self.n_waves-1)*qpc*2, fill_value=extra_box_fill)
 
         for i in range(self.n_waves):
-            initial_conditions[(0 + 3*i) : (3 + 3*i)] = self.front[i], self.back[i], self.concentration[i]
+            ics_base[(0+qpc*i):(qpc+qpc*i)] = self.front[i], self.back[i], self.concentration[i], self.height[i]*np.abs(self.front[i]-self.back[i])
 
+        ics = np.concatenate((ics_base, ics_extra))
+
+        # Solve the system
         sol = solve_ivp(
-            box_model, 
+            box_model,
             t_span=[self.time,time], 
-            y0=initial_conditions, 
-            #t_eval=np.arange(1, time, dt), 
+            y0=ics, 
             method='RK45',
             atol=np.inf,
             rtol=np.inf,
             max_step=dt,
             first_step=dt,
-            events=[concentration_threshold,current_interaction]
+            events=[tracked_current_interaction]
         )
 
-        # If collision occurs, find the index/time where it happens
-        if len(sol.t_events[1]) != 0:
+        # If the system terminates prematurely, solve the system again from just before termination 
+        t_final = sol.t[-1]
 
-            # Identify time of collision
-            terminal_t = sol.t_events[1][0]
-            arg_t = np.argwhere(sol.t == terminal_t)[0][0] - 1
-            print(f"Collision occurs at t={terminal_t}, index={arg_t}")
+        # Capture solved system from before termination
+        y = sol.y[:,:-2]
+        t = sol.t[:-2]
 
-            # Find the rows for fronts and concentrations
-            arg_fronts = np.array([[i,i-1] for i in range(1,self.n_waves*3,3)]).flatten()
-            arg_c = [i for i in range(2,self.n_waves*3,3)]
+        # Track how many new boxes are added
+        new_boxes = 0
 
-            # Put fronts and concentrations in their own matrices
-            fronts = sol.y[arg_fronts,:arg_t]
-            concentrations = sol.y[arg_c,:arg_t]
+        while t_final < time:
+            # Create new initial conditions from earlier solved system
+            ics = y[:,-1]
 
-            # Create a new volume matrix
-            volumes = np.zeros_like(concentrations)
+            for i in range(len(has_collided)):
+                if has_collided[i]:
+                    new_boxes = new_boxes + 2
 
-            for i in range(self.n_waves):
-                volumes[i,:] = (self.front[i] - self.back[i])*self.height[i]
+                    # Left Current
+                    u_s_l = self.u[i]
+                    fr_l = self.froude[i]
+                    x_n_l, x_t_l, c_b_l, V_l = ics[0+qpc*i:qpc+qpc*i]
+                    h_l = V_l / np.abs(x_n_l - x_t_l)
 
-            # Find the indicies where we want to create new boxes
-            arg_insert_fronts = np.array([i for i in range(2,len(fronts)-1,2)])
-            arg_insert_concentrations = np.array([i for i in range(1,len(concentrations))])
+                    # Right Current
+                    u_s_r = self.u[(i+1)]
+                    fr_r = self.froude[(i+1)]
+                    x_n_r, x_t_r, c_b_r, V_r = ics[0+qpc*(i+1):qpc+qpc*(i+1)]
+                    h_r = V_r / np.abs(x_n_r - x_t_r)
 
-            # Create special front pairs for solving in modified box model
-            collision_fronts_pairs = []
+                    center = np.mean([x_n_l,x_t_r])
 
-            # Insert new box fronts
-            for i in arg_insert_fronts:
-                right = fronts[i,:]
-                left = fronts[i-1,:]
-                middle = np.mean([right,left],axis=0)
+                    # Center Left Current
+                    ics[arg_begin_extra+0+qpc*(i*2)] = center                        # x_N(t_c)                    
+                    ics[arg_begin_extra+1+qpc*(i*2)] = x_n_l                         # x_T(t_c)                    
+                    ics[arg_begin_extra+2+qpc*(i*2)] = c_b_l                         # c_b(t_c)                
+                    ics[arg_begin_extra+3+qpc*(i*2)] = h_l * np.abs(x_n_l - center)  # V_b(t_c)
 
-                collision_fronts_pairs.append([left,middle,right])
+                    # Center Right Current
+                    ics[arg_begin_extra+0+qpc*(i*2+1)] = x_t_r                        # x_N(t_c)                    
+                    ics[arg_begin_extra+1+qpc*(i*2+1)] = center                       # x_T(t_c)                    
+                    ics[arg_begin_extra+2+qpc*(i*2+1)] = c_b_r                        # c_b(t_c)                
+                    ics[arg_begin_extra+3+qpc*(i*2+1)] = h_r * np.abs(x_t_r - center) # V_b(t_c)
 
-                fronts = np.insert(
-                    arr=fronts,
-                    obj=i,
-                    values=np.vstack((left,middle,middle,right)),
-                    axis=0,
-                )
-
-                self.n_waves += 2
-
-            # Insert new concentrations and volumes
-            for i in arg_insert_concentrations:
-                concentrations = np.insert(
-                    arr=concentrations,
-                    obj=i,
-                    values=np.array([concentrations[i-1,:], concentrations[i,:]]),
-                    axis=0,
-                )
-
-                volumes = np.insert(
-                    arr=volumes,
-                    obj=i,
-                    values=[[1e-12],[1e-12]],
-                    #values=[[1e-12],[1e-12]],
-                    axis=0,
-                )
-
-            #print(fronts)
-            #print(concentrations)
-            #print(volumes)
-
-            def box_model_collision(t: float, z: float):
-                left, center, right = z[0:3]
-                c1,c2,c3,c4 = z[3:7]
-                V1,V2,V3,V4 = z[7:11]
-                u_s = 0
-
-                left_ = 0.45682*V1 + 0.06707*V2 + -0.53149*V3 + -0.46849*V4 + -0.17260*c3 + -0.05621*c4
-                center_ = 0.51032*V1 + 0.00415*V2 + -0.54307*V4 + -0.05879*c1 + 0.11532*c2 + -0.06338*c3 + 0.02701*c4
-                right_ = 0.48520*V1 + 0.10959*V2 + 0.36019*V3 + -0.53834*V4 + -0.18608*c1 + 0.33033*c2 + -0.08190*c3 + 0.20897*c4
-
-                V1_ = -0.07008*V1 +  0.08357*V2 +  0.02249*V3 + -0.09118*V4 +  0.26945*V1*u_s +  1.83365*V2*u_s +  0.01149*V3*u_s + -0.49722*V4*u_s
-                V2_ =  0.07016*V1 + -0.07842*V2 + -0.02846*V3 +  0.09190*V4 + -0.23123*V1*u_s + -2.26293*V2*u_s +  0.43293*V3*u_s +  0.44054*V4*u_s
-                V3_ =  0.06196*V1 + -0.13175*V2 +  0.03626*V3 +  0.08926*V4 + -0.20196*V1*u_s + -1.55399*V2*u_s + -0.17158*V3*u_s +  0.40881*V4*u_s
-                V4_ = -0.06134*V1 +  0.13179*V2 + -0.03585*V3 + -0.09032*V4 +  0.15986*V1*u_s +  1.96789*V2*u_s + -0.26530*V3*u_s + -0.34043*V4*u_s
-
-                return np.array([left_,center_,right_,0,0,0,0,V1_,V2_,V3_,V4_])
-
-            left,center,right = collision_fronts_pairs[0]
-            print(left[-1],center[-1],right[-1])
-
-            collision_solution = solve_ivp(
-                box_model_collision, 
-                t_span=[sol.t[arg_t],time], 
-                y0=np.hstack((left[-1],center[-1],right[-1],concentrations[:,-1],volumes[:,-1])), 
+            # Solve system
+            sol = solve_ivp(
+                box_model,
+                t_span=[t_final,time], 
+                y0=ics, 
                 method='RK45',
                 atol=np.inf,
                 rtol=np.inf,
                 max_step=dt,
                 first_step=dt,
+                events=[tracked_current_interaction]
             )
 
-            import matplotlib.pyplot as plt
+            t_final = sol.t[-1]
+            y = np.concatenate((y[:,:-2],sol.y[:,:-2]),axis=1)
+            t = np.concatenate((t[:-2],sol.t[:-2]))
 
-            print(collision_solution.y.T)
-            plt.plot(collision_solution.t, collision_solution.y.T[:,:])
-            plt.show()
-
-            y = np.vstack((fronts[0],fronts[1],concentrations[0],volumes[0]))
-            # Recombine into old format
-            for i in range(1,self.n_waves):
-                y = np.vstack((y,fronts[0 + i*2],fronts[1 + i*2], concentrations[i], volumes[i]))
+            #y = np.concatenate((y,sol.y[:,:-2]),axis=1)
+            #t = np.concatenate((t,sol.t[:-2]))
             
-            t = sol.t[:arg_t]
+        self.numerical_solution = MultipleBoxModelSolution(frames=len(t), dt=dt, n_waves=(self.n_waves + (self.n_waves-1)*2))
 
-            self.numerical_solution = MultipleBoxModelSolution(frames=len(y[0]), dt=dt, n_waves=self.n_waves)
-
-            for i in range(len(y[0])):
-                for j in range(self.n_waves):
-                    xN = y[0 + 4*j][i]
-                    xT = y[1 + 4*j][i]
-                    cN = y[2 + 4*j][i]
-                    vN = y[3 + 4*j][i]
-                    hN = vN / np.abs(xN - xT)
-                    self.numerical_solution.frame(index=i, wave=j, time=t[i], head=(xN, hN), tail=(xT, 0.), concentration=cN)
-
-
-        # Collision did not occur
-        else:
-            self.numerical_solution = MultipleBoxModelSolution(frames=len(sol.y[0]), dt=dt, n_waves=self.n_waves)
-
-            for i in range(len(sol.y[0])):
-                t = sol.t[i]
-                for j in range(self.n_waves):
-                    xN = sol.y[0 + 3*j][i]
-                    xT = sol.y[1 + 3*j][i]
-                    cN = sol.y[2 + 3*j][i]
-                    hN = (self.height[j] * self.width[j]) / np.abs(xN-xT)
-                    self.numerical_solution.frame(index=i, wave=j, time=t, head=(xN, hN), tail=(xT, 0.), concentration=cN)
-            
+        for i in range(len(t)):
+            for j in range(self.n_waves + (self.n_waves-1)*2):
+                xN = y[0 + qpc*j][i]
+                xT = y[1 + qpc*j][i]
+                cN = y[2 + qpc*j][i]
+                vN = y[3 + qpc*j][i]
+                hN = vN / np.abs(xN-xT) if vN != extra_box_fill else 0
+                self.numerical_solution.frame(index=i, wave=j, time=t[i], head=(xN, hN), tail=(xT, 0.), concentration=cN)
+        
         self.deposit_solution = MultipleDepositSolution(
             solution=self.numerical_solution, 
             u=self.u, 

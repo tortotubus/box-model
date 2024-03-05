@@ -263,7 +263,7 @@ class MultipleBoxModelViewer():
         self.model = boxmodel
         self.numerical_solution = boxmodel.numerical_solution
         self.deposit_solution = boxmodel.deposit_solution
-        self.n_waves = boxmodel.n_waves
+        self.n_waves = self.numerical_solution.n_waves
         self.dt = self.numerical_solution.dt
         self.fps = 1/self.numerical_solution.dt
 
@@ -316,7 +316,8 @@ class MultipleBoxModelViewer():
 
         for i in range (self.n_waves):
             height = self.numerical_solution.frames[:,i,2]
-            ax.plot(time, height, label=self.labels[i], linestyle='-', color=LINE_COLORS[i])
+            #ax.plot(time, height, label=self.labels[i], linestyle='-', color=LINE_COLORS[i])
+            ax.plot(time, height)
 
         fig.tight_layout()
 
@@ -336,7 +337,9 @@ class MultipleBoxModelViewer():
 
         for i in range (self.n_waves):
             concentration = self.numerical_solution.frames[:,i,5]
-            ax.plot(time, concentration, label=self.labels[i], linestyle='-', color=LINE_COLORS[i])
+            ax.plot(time, concentration, 
+            #label=self.labels[i], 
+            linestyle='-', color=LINE_COLORS[i])
 
         fig.tight_layout()
         ax.legend(loc='right')
@@ -387,7 +390,9 @@ class MultipleBoxModelViewer():
         deposit_x, deposit_y = self.deposit_solution.deposits(np.max(time))
 
         for i in range(self.n_waves):
-            ax.plot(deposit_x, deposit_y[i,:], color=LINE_COLORS[i], label=self.labels[i])
+            ax.plot(deposit_x, deposit_y[i,:], color=LINE_COLORS[i], 
+            #label=self.labels[i]
+            )
 
         ax.set_xlabel('$x$')
         ax.set_ylabel('$h_s(t)$')
@@ -444,8 +449,8 @@ class MultipleBoxModelViewer():
 
     def save_animation(self, filename: str):
         anim = self.animation()
-        writer = animation.FFMpegWriter(fps=self.fps,codec='h264')
-        anim.save(filename, writer=writer)
+        #writer = animation.FFMpegWriter(fps=self.fps,codec='h264')
+        anim.save(filename)#, writer=writer)
 
     def animation(self):
         fig, ax = plt.subplots()
@@ -461,29 +466,18 @@ class MultipleBoxModelViewer():
         plt.ylabel("$y$")
         plt.xlabel("$x$")
 
-        min_x = sys.maxsize
-        max_x = -sys.maxsize
-        max_y = -sys.maxsize
+        fronts_x = np.array([])
+        fronts_y = np.array([])
 
         for i in range(self.n_waves):
-            min_tail_x = np.min(self.numerical_solution.frames[:,i,3])
-            max_head_x = np.max(self.numerical_solution.frames[:,i,1])
-            max_head_y = np.max(self.numerical_solution.frames[:,i,2])
+            fronts_x = np.concatenate((fronts_x, self.numerical_solution.frames[:,i,1], self.numerical_solution.frames[:,i,3]))
+            fronts_y = np.concatenate((fronts_y, self.numerical_solution.frames[:,i,2]))
 
-            if min_tail_x < min_x:
-                min_x = min_tail_x
-            
-            if max_head_x > max_x:
-                max_x = max_head_x
+        min_x, max_x = np.min(fronts_x), np.max(fronts_x)
+        max_y = np.max(fronts_y)
 
-            if max_head_y > max_y:
-                max_y = max_head_y
-
-        ax.set_xlim(min_x, max_x)
-        ax.set_ylim(0, max_y)
-        
-        #ax.set_ylim(0,5)
-        ax.set_xlim(-5,5)
+        ax.set_ylim(0,max_y)
+        ax.set_xlim(min_x,max_x)
 
         frame = self.numerical_solution.frames[0]
         time_label = ax.text((np.abs(max_x - min_x)*.1) + min_x, max_y*.9, "time={0:.{1}f}".format(frame[0,0],2))
@@ -498,6 +492,9 @@ class MultipleBoxModelViewer():
                 (frame[i,3],frame[i,2]),
                 (frame[i,3],frame[i,4]),
             ]
+
+            if np.any(np.isinf(np.array(verts))):
+                print(verts)
 
             codes = [
                 Path.MOVETO,
@@ -528,6 +525,8 @@ class MultipleBoxModelViewer():
                     (frame[j,3],frame[j,2]),
                     (frame[j,3],frame[j,4]),
                 ]
+                if np.any(np.isinf(np.array(verts))):
+                    print(verts)
 
                 codes = [
                     Path.MOVETO,
@@ -548,12 +547,12 @@ class MultipleBoxModelViewer():
         fig.tight_layout()
         anim = animation.FuncAnimation(fig, animate, frames=len(self.numerical_solution.frames), interval=self.dt*1000, blit=False)
 
-        plt.show()
+        #plt.show()
 
         #anim = self.animation()
         #writer = animation.FFMpegWriter(fps=self.fps,codec='h264')
         #anim.save("filename", writer=writer)
-        #ret
+        return anim
 
 
     def animation_time_shots(self, n: int):

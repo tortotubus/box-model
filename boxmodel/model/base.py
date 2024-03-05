@@ -268,6 +268,7 @@ class MultipleDepositSolution():
         deposit_x = np.linspace(self.start, self.end, self.n)
 
         for n in range(self.solution.n_waves):
+        #for n in range(len(self.u)):
 
             def delta_b(x: float, i: int):
                 if (self.solution.frames[i][n][3] <= x <= self.solution.frames[i][n][1]):
@@ -287,7 +288,10 @@ class MultipleDepositSolution():
         deposit_height = np.zeros(self.n)
         deposit_x = np.linspace(self.start, self.end, self.n)
 
+
+        print(self.solution.n_waves)
         for n in range(self.solution.n_waves):
+        #for n in range(len(self.u)):
 
             def delta_b(x: float, i: int):
                 if (self.solution.frames[i][n][3] <= x <= self.solution.frames[i][n][1]):
